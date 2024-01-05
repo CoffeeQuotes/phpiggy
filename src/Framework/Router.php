@@ -8,6 +8,7 @@ namespace Framework;
 class Router
 {
     private array $routes = [];
+    private array $middlewares = [];
 
     public function add(string $method, string $path, array $controller): void
     {
@@ -28,7 +29,7 @@ class Router
         return $path;
     }
 
-    public function dispatch(string $path, string $method): void
+    public function dispatch(string $path, string $method, Container $container = null): void
     {
         $method = strtoupper($method);
         $path = $this->normalizePath($path);
@@ -42,12 +43,19 @@ class Router
             }
             $controller = $route['controller'];
             [$class, $function] = $controller;
-            $controllerInstance = new $class();
-            $controllerInstance->{$function}();
+            $controllerInstance = $container ? $container->resolve($class) : new $class();
+            $action = fn () => $controllerInstance->{$function}();
+            foreach ($this->middlewares as $middleware) {
+                $middlewareInstance = $container ? $container->resolve($middleware) :  new $middleware;
+                $action = fn () => $middlewareInstance->process($action);
+            }
+            $action();
             return;
         }
+    }
 
-        // http_response_code(404);
-        // echo "Page not found";
+    public function addMiddleware(string $middleware): void
+    {
+        $this->middlewares[] = $middleware;
     }
 }
