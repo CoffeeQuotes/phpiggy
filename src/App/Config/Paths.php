@@ -8,6 +8,7 @@ class Paths
 {
     public const VIEW = __DIR__ . "/../views";
     public const SOURCE = __DIR__ . "/../../";
+    public const ROOT = __DIR__ . "/../../../";
     /* public const ROOT_DIR = __DIR__ . '/../..';
     public const APP_DIR = self::ROOT_DIR . '/app';
     public const CONFIG_DIR = self::ROOT_DIR . '/config';
