@@ -17,7 +17,7 @@ function e(mixed $value): string
 
 function redirectTo(string $path)
 {
-    header("Location: ${path}");
+    header("Location: {$path}");
     http_response_code(302);
     exit;
 }
