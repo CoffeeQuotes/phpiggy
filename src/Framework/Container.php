@@ -58,19 +58,28 @@ class Container
 
     public function get(string $id)
     {
-
+        // Check if the specified identifier ($id) is not present in the definitions array of the container
         if (!array_key_exists($id, $this->definitions)) {
+            // If not found, throw an exception indicating that there is no definition for the given identifier in the container
             throw new ContainerException("No definition for {$id} found in container");
         }
+
+        // Check if the specified identifier ($id) is already present in the resolved array
         if (array_key_exists($id, $this->resolved)) {
+            // If found, return the previously resolved dependencies for the given identifier
             return $this->resolved[$id];
         }
+
+        // Retrieve the factory (callable) associated with the specified identifier ($id) from the definitions array
         $factory = $this->definitions[$id];
 
-        $dependencies = $factory();
+        // Call the factory to obtain the dependencies associated with the specified identifier
+        $dependencies = $factory($this);
 
+        // Cache the resolved dependencies in the resolved array to avoid redundant processing for the same identifier
         $this->resolved[$id] = $dependencies;
 
+        // Return the resolved dependencies for the specified identifier
         return $dependencies;
     }
 }
