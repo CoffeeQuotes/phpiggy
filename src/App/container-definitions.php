@@ -6,7 +6,7 @@ declare(strict_types=1);
 // Import classes from namespaces for better readability
 use Framework\{TemplateEngine, Database, Container};
 use App\Config\Paths;
-use App\Services\{ValidatorService, UserService};
+use App\Services\{ValidatorService, UserService, TransactionService};
 
 // Define and return an associative array representing a dependency injection container configuration
 return [
@@ -31,5 +31,12 @@ return [
 
         // Create and return a new UserService instance with the Database instance as a dependency
         return new UserService($db);
+    },
+    TransactionService::class => function (Container $container) {
+        // Get an instance of Database from the container
+        $db = $container->get(Database::class);
+
+        // Create and return a new TransactionService instance with the Database instance as a dependency
+        return new TransactionService($db);
     }
 ];
