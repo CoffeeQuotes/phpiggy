@@ -72,4 +72,34 @@ class ReceiptService
             ]
         );
     }
+
+    public function getReceipt(string $id)
+    {
+        $receipt = $this->db->query("SELECT * FROM receipts WHERE id=:id", [
+            'id' =>  $id
+        ])->find();
+        return $receipt;
+    }
+
+    public function read(array $receipt)
+    {
+        $filePath = Paths::STORAGE_UPLOADS . '/' . $receipt['storage_filename'];
+        if (!file_exists($filePath)) {
+            redirectTo('/');
+        }
+        header("Content-Disposition: inline;filename={$receipt['original_filename']}");
+        header("Content-Type: {$receipt['media_type']}");
+
+        readfile($filePath);
+    }
+
+    public function delete(array $receipt)
+    {
+        # delete the file 
+        $filePath = Paths::STORAGE_UPLOADS . '/' . $receipt['storage_filename'];
+        unlink($filePath);
+        $this->db->query("DELETE FROM receipts WHERE id=:id", [
+            'id' => $receipt['id']
+        ]);
+    }
 }
