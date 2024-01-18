@@ -9,6 +9,7 @@ class Router
 {
     private array $routes = [];
     private array $middlewares = [];
+    private array $errorHandler;
 
     public function add(string $method, string $path, array $controller): void
     {
@@ -36,7 +37,7 @@ class Router
     public function dispatch(string $path, string $method, Container $container = null): void
     {
         // Convert the HTTP method to uppercase for consistency
-        $method = strtoupper($_POST['_METHOD'] ??$method);
+        $method = strtoupper($_POST['_METHOD'] ?? $method);
 
         // Normalize the path by removing any trailing slashes
         $path = $this->normalizePath($path);
@@ -87,6 +88,8 @@ class Router
             // Return to exit the loop after the first matching route is found and processed
             return;
         }
+
+        $this->dispatchNotFound($container);
     }
 
 
@@ -99,5 +102,22 @@ class Router
     {
         $lastRouteKey = array_key_last($this->routes);
         $this->routes[$lastRouteKey]['middlewares'][] = $middleware;
+    }
+
+    public function setErrorHandler(array $controller)
+    {
+        $this->errorHandler = $controller;
+    }
+
+    public function dispatchNotFound(?Container $container)
+    {
+        [$class, $function] = $this->errorHandler;
+        $controllerInstance = $container ? $container->resolve($class) : new $class;
+        $action = fn () => $controllerInstance->$function();
+        foreach ($this->middlewares as $middleware) {
+            $middlewareInstance = $container ? $container->resolve($middleware) : new $middleware;
+            $action = fn () => $middlewareInstance->process($action);
+        }
+        $action();
     }
 }
